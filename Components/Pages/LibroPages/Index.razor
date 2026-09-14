@@ -9,46 +9,104 @@
 <div class="card shadow">
     <div class="card-header">
         <h3>Consulta de Libros</h3>
-</div>
-
-<div class="card-body">
-    <div class="mb-3">
-        <a href="/libros/create" class="btn-primary">+ Crear</a>
     </div>
 
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>LibroId</th>
-                <th>Titulo</th>
-                <th>Autor</th>
-                <th>Anio Publicacion</th>
-                <th>Opciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var libro in ListaLibros){
+    <div class="card-body">
+        <div class="mb-3">
+            <a href="/libros/create" class="btn btn-primary">+ Crear</a>
+        </div>
+
+        <div class="row mb-3">
+            <!-- Filtro -->
+            <div class="col-md-3">
+                <label><strong>Filtrar por</strong></label>
+                <select class="form-select" @bind="filtro">
+                    <option value="id">LibroId</option>
+                    <option value="titulo">Título</option>
+                </select>
+            </div>
+
+            <!-- Búsqueda -->
+            <div class="col-md-6">
+                <label><strong>Búsqueda</strong></label>
+                <div class="input-group">
+                    <input class="form-control" @bind="valorBuscado" placeholder="Buscar..." />
+                    <button class="btn btn-outline-primary" type="button" @onclick="Buscar">
+                        <span class="bi bi-search"></span> Buscar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <table class="table table-bordered">
+            <thead>
                 <tr>
-                    <td>@libro.LibroId</td>
-                    <td>@libro.Titulo</td>
-                    <td>@libro.Autor</td>
-                    <td>@libro.AnoPublicacion</td>
-                    <td><a href="/libros/edit/@libro.LibroId" class="btn btn-warning">Editar</a></td>
+                    <th>LibroId</th>
+                    <th>Título</th>
+                    <th>Autor</th>
+                    <th>Año Publicación</th>
+                    <th>Opciones</th>
                 </tr>
-            }
-        </tbody>
-    </table>
-</div>
-<div class="card-footer">
-    <strong>Cantidad: @ListaLibros.Count</strong>
-</div>
+            </thead>
+            <tbody>
+                @foreach (var libro in ListaLibros){
+                    <tr>
+                        <td>@libro.LibroId</td>
+                        <td>@libro.Titulo</td>
+                        <td>@libro.Autor</td>
+                        <td>@libro.AnoPublicacion</td>
+                        <td>
+                            <a href="/libros/edit/@libro.LibroId" class="btn btn-warning">Editar</a>
+                            <button class="btn btn-danger" @onclick="() => Eliminar(libro.LibroId)">Eliminar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="card-footer text-muted">
+        <strong>Cantidad: @ListaLibros.Count</strong>
+    </div>
 </div>
 
 @code {
-    public List<Libros> ListaLibros {get; set;} = new List<Libros>();
+    public List<Libros> ListaLibros { get; set; } = new List<Libros>();
+    
+    // Variables para el filtro y búsqueda
+    public string filtro { get; set; } = "id";
+    public string valorBuscado { get; set; } = "";
 
     protected override async Task OnInitializedAsync()
     {
-        ListaLibros = await libroService.Listar(l => true);
+        ListaLibros = await libroService.GetList(l => true);
+    }
+
+    // Método que ejecuta el botón de Buscar
+    public async Task Buscar()
+    {
+        // Si la barra está vacía, muestra todos
+        if (string.IsNullOrWhiteSpace(valorBuscado))
+        {
+            ListaLibros = await libroService.GetList(l => true);
+        }
+        else
+        {
+            // Filtra según la opción seleccionada (ID o Título)
+            if (filtro == "id" && int.TryParse(valorBuscado, out int idBuscado))
+            {
+                ListaLibros = await libroService.GetList(l => l.LibroId == idBuscado);
+            }
+            else if (filtro == "titulo")
+            {
+                ListaLibros = await libroService.GetList(l => l.Titulo.ToLower().Contains(valorBuscado.ToLower()));
+            }
+        }
+    }
+
+    public async Task Eliminar(int id)
+    {
+        await libroService.Eliminar(id);
+        ListaLibros = await libroService.GetList(l => true); // Refresca la tabla
     }
 }

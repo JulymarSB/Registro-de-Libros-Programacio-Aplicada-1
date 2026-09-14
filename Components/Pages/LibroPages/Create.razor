@@ -5,6 +5,7 @@
 
 @inject LibroService libroService
 @inject NavigationManager navegacion
+@inject IToastService toastService
 
 <div class="card shadow">
     <div class="card-header">
@@ -63,13 +64,14 @@
 
         if(existe)
         {
-        mensajeError = "Error. Ya existe un libro registrado con ese titulo.";
-        return;
+            toastService.ShowError("Error. Ese titulo ya existe");
+            return;
         }
         //si el titulo no existe, se guarda el libro
-        var guardado = await libroService.Guardar(libro);
+        bool guardado = await libroService.Guardar(libro);
 
         if(guardado){
+            toastService.ShowSuccess("Libro guardado exitosamente");
             navegacion.NavigateTo("/libros"); //para volver a la tabla
         }
 

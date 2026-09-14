@@ -1,3 +1,4 @@
+using Blazored.Toast;
 using RegistroLibros.Components;
 using RegistroLibros.DAL;
 using RegistroLibros.Services;
@@ -8,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 var ConStr = builder.Configuration.GetConnectionString("ConStr");
 builder.Services.AddDbContextFactory<Contexto>(opciones => opciones.UseSqlite(ConStr));
 builder.Services.AddScoped<LibroService>();
+builder.Services.AddBlazoredToast();
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
