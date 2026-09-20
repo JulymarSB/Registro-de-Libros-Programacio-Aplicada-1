@@ -1,0 +1,93 @@
+@page "/Estudiantes/Create"
+@page "/Estudiantes/Edit/{EstudianteId:int}"
+@using RegistroLibros.Models
+@using RegistroLibros.Services
+@inject EstudiantesService estudiantesService
+@inject NavigationManager navigation
+
+<EditForm Model="Estudiante" OnValidSubmit="Guardar" FormName="EstudianteForm">
+    <DataAnnotationsValidator />
+
+        <div class="card shadow-lg">
+            <h3>@(Estudiante.EstudianteId == 0 ? "Registro de Estudiante" : "Editar Estudiante")</h3>
+        </div>
+
+        <div class="card-body">
+            @if(!string.IsNullOrEmpty(MensajeError)){
+                <div class="alert alert-danger" role="alert">
+                    @MensajeError
+                    </div>
+            }
+
+            <div class="mb-3">
+                <label class"form-label">Nombres:</label>
+                <InputText class="form-control" @bind-Value="Estudiante.Nombres"/>
+                <ValidationMessage For="@(() => Estudiante.Nombres)"/>
+            </div>
+
+            <div class="mb-3">
+                <label class"form-label">Direccion:</label>
+                <InputText class="for-control" @bind-Value="Estudiante.Direccion"/>
+                <ValidationMessage For="@(() => Estudiante.Direccion)"/>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email:</label>
+                <InputText class="form-control" @bind-Value="Estudiante.Email"/>
+                <ValidationMessage For="@(() => Estudiante.Email)"/>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Fecha de nacimiento:</label>
+                <InputDate class="form-control" @bind-Value="Estudiante.FechaNacimiento"/>
+                <ValidationMessage For="@(() => Estudiante.FechaNacimiento)"/>
+            </div>
+        <div class="card-footer text-center">
+            <a href="/Estudiantes/Index" class="btn btn-secondary">Volver</a>
+            <button typye="submit" class="btn btn-primary">Guardar</button>
+        </div>
+    </div>
+</EditForm>
+
+
+@code{
+    [Parameter]
+    public int EstudianteId{get; set;}
+
+    [SupplyParameterFromForm]
+    public Estudiantes Estudiante{get; set;} = new Estudiantes(){
+        FechaNacimiento = DateTime.Today
+    };
+    public string MensajeError {get; set;} = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if(EstudianteId > 0){
+            var encontrado = await estudiantesService.Buscar(EstudianteId);
+
+            if(encontrado != null)
+            {
+                Estudiante = encontrado;
+            }
+        }
+    }
+
+    public async Task Guardar()
+    {
+        MensajeError = string.Empty;
+
+        if(await estudiantesService.ExisteNombre(Estudiante.Nombres, Estudiante.EstudianteId)){
+            MensajeError= "Ya existe un estudiante registrado con este nombre.";
+            return;
+        }
+
+        var guardado = await estudiantesService.Guardar(Estudiante);
+        if(guardado){
+            navigation.NavigateTo("/Estudiantes/Index");
+        }
+        else 
+        {
+            MensajeError = "No se pudo guardar el registro en la base de datos.";
+        }
+    }
+}

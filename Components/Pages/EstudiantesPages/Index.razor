@@ -1,0 +1,64 @@
+@page "/Estudiantes/Index"
+@using RegistroLibros.Models
+@using RegistroLibros.Services
+
+@inject EstudiantesService estudiantesService
+
+
+<PageTitle>Listado de Estudiantes</PageTitle>
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h3>Listado de Estudiantes</h3>
+        <a href="Estudiantes/Create" class="btn btn-success"> 
+            <i class="bi bi-plus-circle"></i> Crear nuevo estudiante</a>
+    </div>
+
+    <div class="card-body">
+        @if(ListaEstudiantes == null)
+        {
+            <p><em>Cargando...</em></p>
+        }
+        else if (ListaEstudiantes.Count == 0){
+            <div class="alert alert-info">No hay estudiantes registrados</div>
+        }
+        else
+        {
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombres</th>
+                        <th>Direccion</th>
+                        <th>Email</th>
+                        <th>Fecha nacimiento</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var estudiante in ListaEstudiantes)
+                    {
+                        <tr>
+                            <td>@estudiante.EstudianteId</td>
+                            <td>@estudiante.Nombres</td>
+                            <td>@estudiante.Direccion</td>
+                            <td>@estudiante.Email</td>
+                            <td>@estudiante.FechaNacimiento?.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <a href="/Estudiantes/Edit/@estudiante.EstudianteId" class="btn btn-outline-primary btn-sm">Editar</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@code{
+    public List<Estudiantes> ListaEstudiantes {get; set;} = new List<Estudiantes>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaEstudiantes = await estudiantesService.Listar (e => true);
+    }
+}
