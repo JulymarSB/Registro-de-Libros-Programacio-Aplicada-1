@@ -1,0 +1,9 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Default" />
+    <Platform Name="Default" />
+  </Configurations>
+  <Project Path="RegistroLibros.csproj">
+    <BuildType Project="Debug" />
+  </Project>
+</Solution>

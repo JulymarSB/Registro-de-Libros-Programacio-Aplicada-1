@@ -1,0 +1,116 @@
+@page "/Prestamos/Index"
+@rendermode InteractiveServer
+@inject PrestamoService prestamoService
+@inject NavigationManager navigationManager
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using RegistroLibros.Models
+@using RegistroLibros.Services
+
+<PageTitle>Listado de Préstamos</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white text-center">
+            <h3><strong>Listado de Prestamos</strong></h3>
+        </div>
+        
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <a href="/Prestamos/Create" class="btn btn-success">
+                        <i class="bi bi-plus-square"></i> Crear Prestamo
+                    </a>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <!-- Implementación del QuickGrid -->
+                <QuickGrid Items="@prestamos" Pagination="@pagination" Class="table table-striped table-bordered">
+                    <PropertyColumn Property="@(p => p.PrestamoId)" Title="ID" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.EstudianteId)" Title="ID Estudiante" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.LibroId)" Title="ID Libro" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.FechaPrestamo)" Title="Prestamo" Format="dd/MM/yyyy" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.FechaDevolucion)" Title="Devolucion" Format="dd/MM/yyyy" Sortable="true" />
+                    
+                    <TemplateColumn Title="Acciones">
+                        <a href="/Prestamos/Edit/@context.PrestamoId" class="btn btn-warning btn-sm">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+                        <button class="btn btn-danger btn-sm" @onclick="() => MostrarModal(context.PrestamoId)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+            
+            <!-- Paginación del QuickGrid -->
+            <div class="card-footer d-flex justify-content-center">
+                <Paginator State="@pagination" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación para Eliminar -->
+@if (mostrarModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="bi bi-exclamation-triangle"></i> Confirmar Eliminacion</h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CerrarModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Estas seguro de que deseas eliminar este prestamo?</p>
+                    <p class="text-muted"><small>Al confirmar, el libro volvera a estar disponible en el sistema.</small></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarModal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" @onclick="EliminarConfirmado">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    // El QuickGrid requiere un IQueryable
+    private IQueryable<Prestamos> prestamos = Enumerable.Empty<Prestamos>().AsQueryable();
+    private PaginationState pagination = new PaginationState { ItemsPerPage = 5 }; 
+    
+   
+    private bool mostrarModal = false;
+    private int prestamoIdSeleccionado;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarPrestamos();
+    }
+
+    private async Task CargarPrestamos()
+    {
+        var lista = await prestamoService.GetList(p => true);
+        prestamos = lista.AsQueryable();
+    }
+
+    private void MostrarModal(int id)
+    {
+        prestamoIdSeleccionado = id;
+        mostrarModal = true; 
+    }
+
+    private void CerrarModal()
+    {
+        mostrarModal = false; 
+    }
+
+    private async Task EliminarConfirmado()
+    {
+        await prestamoService.Eliminar(prestamoIdSeleccionado);
+        await CargarPrestamos();
+        CerrarModal();
+    }
+}

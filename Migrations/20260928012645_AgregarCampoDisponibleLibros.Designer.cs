@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RegistroLibros.DAL;
 
@@ -11,9 +12,11 @@ using RegistroLibros.DAL;
 namespace RegistroLibros.Migrations
 {
     [DbContext(typeof(Contexto))]
-    partial class ContextoModelSnapshot : ModelSnapshot
+    [Migration("20260928012645_AgregarCampoDisponibleLibros")]
+    partial class AgregarCampoDisponibleLibros
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -75,31 +78,6 @@ namespace RegistroLibros.Migrations
                     b.HasKey("LibroId");
 
                     b.ToTable("Libros");
-                });
-
-            modelBuilder.Entity("RegistroLibros.Models.Prestamos", b =>
-                {
-                    b.Property<int>("PrestamoId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PrestamoId"));
-
-                    b.Property<int>("EstudianteId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("FechaDevolucion")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("FechaPrestamo")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("LibroId")
-                        .HasColumnType("int");
-
-                    b.HasKey("PrestamoId");
-
-                    b.ToTable("Prestamos");
                 });
 #pragma warning restore 612, 618
         }

@@ -63,7 +63,6 @@ public class EstudiantesService
     {
         return await _contexto.Estudiantes
             .AsNoTracking()
-            .Where(criterio)
             .ToListAsync();
     }
 }

@@ -6,11 +6,13 @@ public class Libros
     public int LibroId{get; set;}
 
     [Required(ErrorMessage = "Error")]
-    public string Titulo {get; set;} = null!;
+    public string Titulo {get; set;} = string.Empty;
+
     [Required(ErrorMessage = "Error")]
-    public string Autor {get; set;}= null!;
+    public string Autor {get; set;}= string.Empty;
+
     [Required(ErrorMessage = "Error")]
     public int AnoPublicacion {get; set;}
-    
 
+    public bool Disponible { get; set; } = true;
 }
