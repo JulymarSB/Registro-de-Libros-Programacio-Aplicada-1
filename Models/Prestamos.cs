@@ -15,5 +15,5 @@ public class Prestamos
 
     public DateTime FechaPrestamo { get; set; } = DateTime.Now;
 
-    public DateTime FechaDevolucion { get; set; }
+    public DateTime FechaDevolucion { get; set; } = DateTime.Today;
 }
