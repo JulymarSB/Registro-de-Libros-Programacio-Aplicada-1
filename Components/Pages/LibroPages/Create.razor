@@ -60,19 +60,18 @@
 
     public async Task Guardar(){
         //Verificamos si existe el titulo en la base de datos
-        bool existe = await libroService.ExisteLibro(libro.Titulo);
+        bool existe = await libroService.ExisteTituloLibro(libro.Titulo);
 
         if(existe)
         {
             toastService.ShowError("Error. Ese titulo ya existe");
             return;
         }
-        //si el titulo no existe, se guarda el libro
         bool guardado = await libroService.Guardar(libro);
 
         if(guardado){
             toastService.ShowSuccess("Libro guardado exitosamente");
-            navegacion.NavigateTo("/libros"); //para volver a la tabla
+            navegacion.NavigateTo("/Libros/Index");
         }
 
     }

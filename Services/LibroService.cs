@@ -20,12 +20,12 @@ public class LibroService(IDbContextFactory<Contexto> contextFactory)
             return await Modificar(libro);
         }
     }
-    private async Task<bool> Existe(int libroid)
+    public async Task<bool> Existe(int libroid)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
         return await contexto.Libros.AnyAsync(l => l.LibroId == libroid);
     }
-    private async Task<bool> ExisteTituloLibro(String titulo)
+    public async Task<bool> ExisteTituloLibro(String titulo)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
         return await contexto.Libros.AnyAsync(l =>l.Titulo.ToLower() == titulo.ToLower());
@@ -67,5 +67,10 @@ public class LibroService(IDbContextFactory<Contexto> contextFactory)
         .Where(criterio)
         .AsNoTracking()
         .ToListAsync();
+    }
+
+    internal async Task<bool> Existe(string titulo)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -24,4 +24,5 @@ public partial class Prestamos
     public virtual Libros Libro { get; set; }
     
     public DateTime FechaPrestamo { get; set; } = DateTime.Now;
+    public DateTime? FechaDevolucion { get; set; } = DateTime.Now;
 }

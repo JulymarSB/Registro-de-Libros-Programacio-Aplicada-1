@@ -1,12 +1,13 @@
 @using RegistroLibros.Services
-@page "/libros"
+@page "/Libros/Index"
 @rendermode InteractiveServer
 
 @inject LibroService libroService
-@inject NavigationManager navegacion
+@inject ToastService toastService
 
-<div class="card shadow">
-    <div class="card-header">
+<PageTitle>Index</PageTitle>
+<div class="card shadow-lg">
+    <div class="card-header d-flex justify-content-between align-center mb-4">
         <h3>Consulta de Libros</h3>
     </div>
 
