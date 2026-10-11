@@ -1,40 +1,45 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using RegistroLibros.DAL;
+using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using RegistroLibros.Context;
 using RegistroLibros.Models;
 using System.Linq.Expressions;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace RegistroLibros.Services;
 
-public class EstudiantesService
+public class EstudiantesService(IDbContextFactory<Contexto> contextFactory) : Aplicada1.Core.IService<RegistroLibros.Models.Estudiantes, int >
 {
-    private readonly Contexto _contexto;
-
-    public EstudiantesService(Contexto contexto)
+    private async Task<bool> ExisteNombre(string nombres, int estudianteId = 0)
     {
-        _contexto = contexto;
+        await using var contexto = await contextFactory.CreateDbContextAsync();
+            
+            return await contexto.Estudiantes.AnyAsync(e => e.Nombres.ToLower() == nombres.ToLower() && e.EstudianteId != estudianteId);
+    }
+    private async Task<bool> Existe(string nombres, int estudianteId = 0)
+    {
+        await using var contexto = await contextFactory.CreateDbContextAsync();
+            
+            return await contexto.Estudiantes.AnyAsync(e => e.EstudianteId != estudianteId);
     }
 
-    public async Task<bool> ExisteNombre(string nombres, int estudianteId = 0)
+    private async Task<bool> Insertar(Estudiantes estudiante)
     {
-        return await _contexto.Estudiantes
-            .AnyAsync(e => e.Nombres.ToLower() == nombres.ToLower() && e.EstudianteId != estudianteId);
+        await using var contexto = await contextFactory.CreateDbContextAsync();
+        contexto.Estudiantes.Add(estudiante);
+        return await contexto.SaveChangesAsync() > 0;
     }
 
-    public async Task<bool> Insertar(Estudiantes estudiante)
+    private async Task<bool> Modificar(Estudiantes estudiante)
     {
-        _contexto.Estudiantes.Add(estudiante);
-        return await _contexto.SaveChangesAsync() > 0;
-    }
-
-    public async Task<bool> Modificar(Estudiantes estudiante)
-    {
-        _contexto.Estudiantes.Update(estudiante);
-        return await _contexto.SaveChangesAsync() > 0;
+        await using var contexto = await contextFactory.CreateDbContextAsync();
+        contexto.Estudiantes.Update(estudiante);
+        return await contexto.SaveChangesAsync() > 0;
     }
 
     public async Task<bool> Guardar(Estudiantes estudiante)
     {
-        if (await ExisteNombre(estudiante.Nombres, estudiante.EstudianteId))
+        if (!await Existe(estudiante.Nombres, estudiante.EstudianteId))
             return false;
 
         if (estudiante.EstudianteId == 0)
@@ -43,25 +48,24 @@ public class EstudiantesService
             return await Modificar(estudiante);
     }
 
-    public async Task<bool> Eliminar(int id)
+    public async Task<bool> Eliminar(int estudianteId)
     {
-        var estudiante = await _contexto.Estudiantes.FindAsync(id);
-        if (estudiante == null) return false;
-
-        _contexto.Estudiantes.Remove(estudiante);
-        return await _contexto.SaveChangesAsync() > 0;
+        await using var contexto = await contextFactory.CreateDbContextAsync();
+        var estudiante = await contexto.Estudiantes.Where(e => e.EstudianteId == estudianteId).ExecuteDeleteAsync();
+        return await contexto.SaveChangesAsync() > 0;
     }
 
     public async Task<Estudiantes?> Buscar(int id)
     {
-        return await _contexto.Estudiantes
-            .AsNoTracking()
+        await using var contexto = await contextFactory.CreateDbContextAsync();
+        return await contexto.Estudiantes
             .FirstOrDefaultAsync(e => e.EstudianteId == id);
     }
 
-    public async Task<List<Estudiantes>> Listar(Expression<Func<Estudiantes, bool>> criterio)
+    public async Task<List<Estudiantes>> GetList(Expression<Func<Estudiantes, bool>> criterio)
     {
-        return await _contexto.Estudiantes
+        await using var contexto = await contextFactory.CreateDbContextAsync();
+        return await contexto.Estudiantes.Where(criterio)
             .AsNoTracking()
             .ToListAsync();
     }

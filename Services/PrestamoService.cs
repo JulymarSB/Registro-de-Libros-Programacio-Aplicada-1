@@ -1,15 +1,11 @@
 using System.Linq.Expressions;
-using Aplicada1.Core;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
-using RegistroLibros.DAL;
+using RegistroLibros.Context;
 using RegistroLibros.Models;
-
-
 
 namespace RegistroLibros.Services;
 
-public class PrestamoService(IDbContextFactory<Contexto> DbFactory) : IService<Prestamos, int>
+public class PrestamoService(IDbContextFactory<Contexto> contextFactory) : Aplicada1.Core.IService<Prestamos, int>
 {
     public async Task<bool> Guardar(Prestamos prestamo)
     {
@@ -25,7 +21,7 @@ public class PrestamoService(IDbContextFactory<Contexto> DbFactory) : IService<P
 
     private async Task<bool>Insertar(Prestamos prestamo)
     {
-        await using var contexto = await DbFactory.CreateDbContextAsync();
+        await using var contexto = await contextFactory.CreateDbContextAsync();
 
         var estudianteConPrestamo = await contexto.Prestamos.AnyAsync(p => p.EstudianteId == prestamo.EstudianteId);
 
@@ -50,14 +46,14 @@ public class PrestamoService(IDbContextFactory<Contexto> DbFactory) : IService<P
 
     public async Task<bool> Modificar(Prestamos prestamo)
     {
-        await using var contexto = await DbFactory.CreateDbContextAsync();
+        await using var contexto = await contextFactory.CreateDbContextAsync();
         contexto.Prestamos.Update(prestamo);
         return await contexto.SaveChangesAsync()>0;
     }
 
     public async Task<bool>Eliminar(int id)
     {
-        await using var contexto = await DbFactory.CreateDbContextAsync();
+        await using var contexto = await contextFactory.CreateDbContextAsync();
         var prestamo = await contexto.Prestamos.FindAsync(id);
 
         if(prestamo == null)
@@ -78,13 +74,13 @@ public class PrestamoService(IDbContextFactory<Contexto> DbFactory) : IService<P
 
     public async Task<Prestamos?>Buscar(int id)
     {
-        await using var contexto = await DbFactory.CreateDbContextAsync();
+        await using var contexto = await contextFactory.CreateDbContextAsync();
         return await contexto.Prestamos.AsNoTracking().FirstOrDefaultAsync(p => p.PrestamoId == id);
     }
 
     public async Task<List<Prestamos>> GetList(Expression<Func<Prestamos, bool>> criterio)
     {
-        await using var contexto = await DbFactory.CreateDbContextAsync();
+        await using var contexto = await contextFactory.CreateDbContextAsync();
         return await contexto.Prestamos.AsNoTracking().Where(criterio).ToListAsync();
     }
 }

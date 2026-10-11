@@ -60,6 +60,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        ListaEstudiantes = await estudiantesService.Listar (e => true);
+        ListaEstudiantes = await estudiantesService.GetList (e => true);
     }
 }
