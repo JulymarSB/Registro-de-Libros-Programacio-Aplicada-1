@@ -1,16 +1,14 @@
-using Blazored.Toast;
 using RegistroLibros.Components;
 using RegistroLibros.Context;
 using RegistroLibros.Services;
 using Microsoft.EntityFrameworkCore;
 using Blazored.Toast.Services;
 
-
 var builder = WebApplication.CreateBuilder(args);
 var ConStr = builder.Configuration.GetConnectionString("ConStr");
 builder.Services.AddDbContextFactory<Contexto>(opciones => opciones.UseSqlServer(ConStr));
+builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddScoped<LibroService>();
-builder.Services.AddBlazoredToast();
 builder.Services.AddScoped<IToastService>();
 builder.Services.AddScoped<EstudiantesService>();
 builder.Services.AddScoped<PrestamoService>();
