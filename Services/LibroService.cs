@@ -3,32 +3,43 @@ using Aplicada1.Core;
 using Microsoft.EntityFrameworkCore;
 using RegistroLibros.Context;
 using RegistroLibros.Models;
-using Aplicada1.Core;
+
 namespace RegistroLibros.Services;
 
-public class LibroService(IDbContextFactory<Contexto> DbFactory): IService<Libros, int>
+public class LibroService(IDbContextFactory<Contexto> DbFactory)
+    :Aplicada1.Core.IService<Libros, int>
 {
-    public async Task<bool> ExisteLibro(String titulo)
+     public async Task<bool> Guardar(Libros libro)
+    {
+        if(libro.LibroId == 0)
+        {
+            return await Insertar(libro);
+        }
+        else
+        {
+            return await Modificar(libro);
+        }
+    }
+    private async Task<bool> ExisteTituloLibro(int libroid)
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+        return await contexto.Libros.AnyAsync(l => l.LibroId == id);
+    }
+    private async Task<bool> ExisteLibro(String titulo)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
         return await contexto.Libros.AnyAsync(l =>l.Titulo.ToLower() == titulo.ToLower());
         
     }
 
-    public async Task<bool> Existe(int id)
-    {
-        await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.Libros.AnyAsync(l => l.LibroId == id);
-    }
-
-    public async Task<bool> Insertar(Libros libro)
+    private async Task<bool> Insertar(Libros libro)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
         contexto.Libros.Add(libro);
         return await contexto.SaveChangesAsync() > 0;
     }
 
-    public async Task<bool> Modificar(Libros libro)
+    private async Task<bool> Modificar(Libros libro)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
         contexto.Libros.Update(libro);

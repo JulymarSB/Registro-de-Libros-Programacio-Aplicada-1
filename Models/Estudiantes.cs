@@ -17,6 +17,5 @@ public partial class Estudiantes
 		public string Email { get; set; } = string.Empty;
 
 		[Required(ErrorMessage = "El campo Fecha de Nacimiento es obligatorio.")]
-		public DateTime? FechaNacimiento { get; set; }
-		
+		public DateTime FechaNacimiento { get; set; }
 }
