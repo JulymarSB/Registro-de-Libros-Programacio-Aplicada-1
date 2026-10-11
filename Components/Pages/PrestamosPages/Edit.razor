@@ -99,7 +99,7 @@
 
         prestamo = await prestamoService.Buscar(PrestamoId) ?? new Prestamos();
 
-        estudiantes = await estudiantesService.Listar(e => true);
+        estudiantes = await estudiantesService.GetList(e => true);
         
         libros = await libroService.GetList(l => l.Disponible == true || l.LibroId == prestamo.LibroId);
     }

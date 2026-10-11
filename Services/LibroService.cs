@@ -6,12 +6,12 @@ using RegistroLibros.Models;
 
 namespace RegistroLibros.Services;
 
-public class LibroService(IDbContextFactory<Contexto> DbFactory)
+public class LibroService(IDbContextFactory<Contexto> contextFactory)
     :Aplicada1.Core.IService<Libros, int>
 {
      public async Task<bool> Guardar(Libros libro)
     {
-        if(libro.LibroId == 0)
+        if (!await Existe(libro.LibroId))
         {
             return await Insertar(libro);
         }
@@ -20,59 +20,52 @@ public class LibroService(IDbContextFactory<Contexto> DbFactory)
             return await Modificar(libro);
         }
     }
-    private async Task<bool> ExisteTituloLibro(int libroid)
+    private async Task<bool> Existe(int libroid)
     {
-        await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.Libros.AnyAsync(l => l.LibroId == id);
+        await using var contexto = await contextFactory.CreateDbContextAsync();
+        return await contexto.Libros.AnyAsync(l => l.LibroId == libroid);
     }
-    private async Task<bool> ExisteLibro(String titulo)
+    private async Task<bool> ExisteTituloLibro(String titulo)
     {
-        await using var contexto = await DbFactory.CreateDbContextAsync();
+        await using var contexto = await contextFactory.CreateDbContextAsync();
         return await contexto.Libros.AnyAsync(l =>l.Titulo.ToLower() == titulo.ToLower());
         
     }
 
     private async Task<bool> Insertar(Libros libro)
     {
-        await using var contexto = await DbFactory.CreateDbContextAsync();
-        contexto.Libros.Add(libro);
+        await using var contexto = await contextFactory.CreateDbContextAsync();
+        contexto.Libros.Update(libro);
         return await contexto.SaveChangesAsync() > 0;
     }
 
     private async Task<bool> Modificar(Libros libro)
     {
-        await using var contexto = await DbFactory.CreateDbContextAsync();
+        await using var contexto = await contextFactory.CreateDbContextAsync();
         contexto.Libros.Update(libro);
         return await contexto.SaveChangesAsync() > 0;
     }
 
-    public async Task<bool> Guardar(Libros libro)
+    public async Task<Libros?> Buscar(int libroId)
     {
-        if(libro.LibroId == 0)
-        {
-            return await Insertar(libro);
-        }
-        else
-        {
-            return await Modificar(libro);
-        }
+        await using var contexto = await contextFactory.CreateDbContextAsync();
+        return await contexto.Libros.FirstOrDefaultAsync(l => l.LibroId ==  libroId);
     }
 
-    public async Task<Libros?> Buscar(int id)
+    public async Task<bool> Eliminar(int libroId)
     {
-        await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.Libros.FirstOrDefaultAsync(l => l.LibroId ==  id);
-    }
-
-    public async Task<bool> Eliminar(int id)
-    {
-        await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.Libros.Where(l => l.LibroId == id).ExecuteDeleteAsync() > 0;
+        await using var contexto = await contextFactory.CreateDbContextAsync();
+        return await contexto.Libros
+        .Where(l => l.LibroId == libroId)
+        .ExecuteDeleteAsync() > 0;
     }
 
     public async Task<List<Libros>> GetList(Expression<Func<Libros, bool>> criterio)
     {
-        await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.Libros.Where(criterio).AsNoTracking().ToListAsync();
+        await using var contexto = await contextFactory.CreateDbContextAsync();
+        return await contexto.Libros
+        .Where(criterio)
+        .AsNoTracking()
+        .ToListAsync();
     }
 }
