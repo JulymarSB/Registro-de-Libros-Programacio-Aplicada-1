@@ -46,7 +46,7 @@
 @code {
     [Parameter]
     public int LibroId {get; set;}
-    public Libros libro {get; set;} = new;
+    public Libros libro {get; set;} = new();
 
     protected override async Task OnInitializedAsync(){
         var encontrado = await libroService.Buscar(LibroId);
