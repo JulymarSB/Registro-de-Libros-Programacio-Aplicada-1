@@ -10,11 +10,11 @@ namespace RegistroLibros.Services;
 
 public class EstudiantesService(IDbContextFactory<Contexto> contextFactory) : Aplicada1.Core.IService<RegistroLibros.Models.Estudiantes, int >
 {
-    private async Task<bool> ExisteNombre(string nombres, int estudianteId = 0)
+    public async Task<bool> ExisteNombre(string nombres)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
             
-            return await contexto.Estudiantes.AnyAsync(e => e.Nombres.ToLower() == nombres.ToLower() && e.EstudianteId != estudianteId);
+            return await contexto.Estudiantes.AnyAsync(e => e.Nombres.ToLower() == nombres.ToLower());
     }
     private async Task<bool> Existe(string nombres, int estudianteId = 0)
     {

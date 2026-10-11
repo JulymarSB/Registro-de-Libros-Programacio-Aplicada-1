@@ -1,10 +1,9 @@
-@using RegistroLibros.Models
-@using RegistroLibros.Services
 @page "/libros/edit/{LibroId:int}"
 @rendermode InteractiveServer
+
 @inject LibroService libroService
-@inject NavigationManager navegacion
-@inject IToastService toastService
+@inject NavigationManager navitationManager
+@inject ToastService toastService
 
 <div class="card shadow">
     <div class="card-header">
@@ -12,9 +11,8 @@
     </div>
 
     <div class="card-body">
-        <EditForm Model="libro" OnValidSumit="Modificar">
+        <EditForm Model="libro" OnValidSubmit="Modificar">
             <DataAnnotationsValidator/>
-
             <div class="mb-3">
                 <label><strong>LibroId</strong></label>
                 <InputNumber class="form-control" @bind-Value="libro.LibroId" readonly></InputNumber>
@@ -41,7 +39,6 @@
             <div class="card-footer mt-3">
                 <a href="/libros" class="btn btn-secondary"> Volver</a>
                 <button type="submit" class="btn btn-primary">Modificar</button>
-                <button type="button" class="btn btn-danger" @onclick="Eliminar">Eliminar</button>
             </div>
         </EditForm>
     </div>
@@ -49,7 +46,7 @@
 @code {
     [Parameter]
     public int LibroId {get; set;}
-    public Libros libro {get; set;} = new Libros();
+    public Libros libro {get; set;} = new;
 
     protected override async Task OnInitializedAsync(){
         var encontrado = await libroService.Buscar(LibroId);
@@ -58,13 +55,10 @@
         }
     }
 
-    public async Task Modificar(){
-        await libroService.Guardar(libro);
-        navegacion.NavigateTo("/libros");
-    }
-
-    public async Task Eliminar(){
-        await libroService.Eliminar(libro.LibroId);
-        navegacion.NavigateTo("/libros");
+    private async Task Modificar(){
+        if(await libroService.Guardar(libro))
+        {
+        navitationManager.NavigateTo("/libros");
+        }
     }
 }

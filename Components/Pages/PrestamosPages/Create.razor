@@ -5,11 +5,12 @@
 @inject LibroService libroService
 @inject EstudiantesService estudiantesService
 @inject NavigationManager navigationManager
+@inject ToastService toastService
 
 @using RegistroLibros.Services
 @using RegistroLibros.Models;
 
-<PageTitle>Registrar Prestamo</PageTitle>
+<PageTitle> Registrar Préstamo </PageTitle>
     <div class="container">
         <div class="card shadow-lg">
             <div class="card-header text-white text-center">
@@ -19,19 +20,11 @@
             <div class="card-body">
                 <EditForm Model="prestamo" OnValidSubmit="Guardar">
                     <DataAnnotationsValidator />
-
-                    @if(!string.IsNullOrEmpty(mensajeError))
-                    {
-                        <div class="alert alert-danger" role="alert">
-                            <i class="bi bi-exclamation-triangle"></i> @mensajeError
-                        </div>
-                    }
-
                     @*Selector de estudiante*@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label"><strong>Estudiante:</strong></label>
-                            <InputSelect class="form-select" @bind-Value=prestamo.EstudianteId>
+                            <InputSelect class="form-select" @bind-Value="prestamo.EstudianteId">
 
                                 <option value="0" disabled>-- Seleccione un estudiante --</option>
 
@@ -57,7 +50,7 @@
                         </div>
                     </div>
 
-                    @*Fecha Prestamo*@
+                    @*Fecha Prestamos*@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label"><strong>Fecha de Prestamo:</strong></label>
@@ -92,31 +85,29 @@
 
 
 @code {
-    public Prestamos prestamo {get; set;} = new Prestamos();
+    public Prestamos prestamo {get; set;} = new();
 
-    public List<Estudiantes> estudiantes {get; set;} = new List<Estudiantes>();
-    public List<Libros> libros {get; set;} = new List<Libros>();
-    public string mensajeError{get; set;} = string.Empty;
+    public List<Estudiantes> estudiantes {get; set;} = new();
+    public List<Libros> libros {get; set;} = new();
 
     protected override async Task OnInitializedAsync()
     {
         estudiantes = await estudiantesService.GetList(e => true);
-        libros = await libroService.GetList(l => l.Disponible == true);
+        libros = await libroService.GetList(l => l.Disponible);
     }
 
-    public async Task Guardar()
+    private async Task Guardar()
     {
-        mensajeError = string.Empty;
 
         if(prestamo.EstudianteId == 0)
         {
-            mensajeError = "Debe seleccionar un estudiante.";
+            toastService.MostrarError("Debe seleccionar un estudiante.");
             return;
         }
 
         if(prestamo.LibroId == 0)
         {
-            mensajeError = "Debe seleccionar un libro.";
+            toastService.MostrarError("Debe seleccionar un libro.");
             return;
         }
 
@@ -128,8 +119,7 @@
         }
         else
         {
-            mensajeError = "No se pudo guardar.";
+            toastService.MostrarError("No se pudo guardar.");
         }
     }
-
 }
