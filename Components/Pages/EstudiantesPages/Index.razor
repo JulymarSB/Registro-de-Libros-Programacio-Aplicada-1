@@ -1,10 +1,7 @@
 @page "/Estudiantes/Index"
 @rendermode InteractiveServer
-@using RegistroLibros.Models
-@using RegistroLibros.Services
-
+@inject ToastService toastService
 @inject EstudiantesService estudiantesService
-
 
 <PageTitle>Listado de Estudiantes</PageTitle>
 <div class="card shadow-lg">
@@ -15,6 +12,32 @@
     </div>
 
     <div class="card-body">
+        @* Bloque de Filtros y Busqueda*@
+        <div class="row mb-4 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label"><strong>Filtrar por:</strong></label>
+                <InputSelect class="form-select" @bind-Value="Filtro">
+                    <option value="" selected disabled>Seleccione una opción</option>
+                    <option value="nombres">Nombres</option>
+                    <option value="direccion">Dirección</option>
+                    <option value="email">Email</option>
+                </InputSelect>
+            </div>
+            
+            <div class="col-md-6">
+                <label class="form-label"><strong>Búsqueda:</strong></label>
+                <div class="input-group">
+                    <InputText class="form-control" @bind-Value="ValorFiltro" placeholder="Ingrese el valor a buscar..." />
+                    <button type="button" class="btn btn-primary" @onclick="Buscar">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" @onclick="Restablecer">
+                        <i class="bi bi-arrow-clockwise"></i> Restablecer
+                    </button>
+                </div>
+            </div>
+        </div>
+
         @if(ListaEstudiantes == null)
         {
             <p><em>Cargando...</em></p>
@@ -29,7 +52,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Nombres</th>
-                        <th>Direccion</th>
+                        <th>Dirección</th>
                         <th>Email</th>
                         <th>Fecha nacimiento</th>
                         <th>Acciones</th>
@@ -43,9 +66,11 @@
                             <td>@estudiante.Nombres</td>
                             <td>@estudiante.Direccion</td>
                             <td>@estudiante.Email</td>
-                            <td>@estudiante.FechaNacimiento?.ToString("dd/MM/yyyy")</td>
+                            <td>@estudiante.FechaNacimiento.ToString("dd/MM/yyyy")</td>
                             <td>
                                 <a href="/Estudiantes/Edit/@estudiante.EstudianteId" class="btn btn-outline-primary btn-sm">Editar</a>
+                                <button class="btn btn-outline-danger" @onclick="() => Eliminar(estudiante.EstudianteId)">Eliminar</button>
+
                             </td>
                         </tr>
                     }
@@ -56,10 +81,39 @@
 </div>
 
 @code{
-    public List<Estudiantes> ListaEstudiantes {get; set;} = new List<Estudiantes>();
+    public List<Estudiantes> ListaEstudiantes { get; set; } = new List<Estudiantes>();
 
-    protected override async Task OnInitializedAsync()
+    public string Filtro { get; set; } = string.Empty;
+    public string ValorFiltro { get; set; } = string.Empty;
+
+    public async Task Buscar()
     {
+          if (string.IsNullOrWhiteSpace(ValorFiltro))
+        {
+            ListaEstudiantes = await estudiantesService.GetList(l => true);
+        }
+        else
+        {
+            if (Filtro == "id" && int.TryParse(ValorFiltro, out int idBuscado))
+            {
+                ListaEstudiantes = await estudiantesService.GetList(l => l.EstudianteId == idBuscado);
+            }
+            else if (Filtro == "titulo")
+            {
+                ListaEstudiantes = await estudiantesService.GetList(l => l.Nombres.ToLower().Contains(ValorFiltro.ToLower()));
+            }
+        }
+    }
+
+    private async Task Eliminar(int estudianteId)
+    {
+        await estudiantesService.Eliminar(estudianteId);
+        ListaEstudiantes = await estudiantesService.GetList(l => true);
+    }
+    public async Task Restablecer()
+    {
+        Filtro = "";
+        ValorFiltro = "";
         ListaEstudiantes = await estudiantesService.GetList (e => true);
     }
 }

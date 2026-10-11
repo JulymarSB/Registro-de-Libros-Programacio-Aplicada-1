@@ -1,11 +1,11 @@
 @page "/Prestamos/Edit/{PrestamoId:int}"
 @rendermode InteractiveServer
+
 @inject PrestamoService prestamoService
 @inject LibroService libroService
 @inject EstudiantesService estudiantesService
 @inject NavigationManager navigationManager
-@using RegistroLibros.Models
-@using RegistroLibros.Services
+@inject ToastService toastService
 
 <PageTitle>Editar Prestamo</PageTitle>
 
@@ -16,16 +16,8 @@
         </div>
 
         <div class="card-body">
-            <EditForm Model="prestamo" OnValidSubmit="Guardar">
+            <EditForm Model="prestamo" OnValidSubmit="Modificar">
                 <DataAnnotationsValidator />
-
-                @if (!string.IsNullOrEmpty(mensajeError))
-                {
-                    <div class="alert alert-danger" role="alert">
-                        <i class="bi bi-exclamation-triangle"></i> @mensajeError
-                    </div>
-                }
-
                 <div class="row">
                     <!-- Selector de Estudiante -->
                     <div class="col-md-6 mb-3">
@@ -91,8 +83,6 @@
     
     public List<Estudiantes> estudiantes { get; set; } = new List<Estudiantes>();
     public List<Libros> libros { get; set; } = new List<Libros>();
-    
-    public string mensajeError { get; set; } = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -104,9 +94,8 @@
         libros = await libroService.GetList(l => l.Disponible == true || l.LibroId == prestamo.LibroId);
     }
 
-    public async Task Guardar()
+    private async Task Modificar()
     {
-        mensajeError = string.Empty;
 
         var guardo = await prestamoService.Guardar(prestamo);
         
@@ -116,7 +105,7 @@
         }
         else
         {
-            mensajeError = "Hubo un error al modificar el prestamo.";
+            toastService.MostrarError("Hubo un error al modificar el prestamo.");
         }
     }
 }

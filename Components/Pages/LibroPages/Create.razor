@@ -1,5 +1,3 @@
-@using RegistroLibros.Models
-@using RegistroLibros.Services
 @page "/libros/create"
 @rendermode InteractiveServer
 
@@ -13,16 +11,8 @@
     </div>
 
     <div class="card-body">
-        @if(!string.IsNullOrEmpty(mensajeError))
-        {
-            <div class"alert alert-danger">
-                @mensajeError
-            </div>
-        }
-
-        <EditForm Model="libro" OnvalidSubmit="Guardar">
+        <EditForm Model="libro" OnValidSubmit="Guardar">
             <DataAnnotationsValidator/>
-
             <div class="mb-3">
                 <label><strong>LibroId</strong></label>
                 <InputNumber class="form-control" @bind-Value="libro.LibroId" readonly></InputNumber>
@@ -36,18 +26,18 @@
 
             <div class="mb-3">
                 <label><strong>Autor</strong></label>
-                <InputText class"form-control" @bind-Value="libro.Autor"></InputText>
+                <InputText class=form-control" @bind-Value="libro.Autor"></InputText>
                 <ValidationMessage For="(() => libro.Autor)" />
             </div>
 
             <div class="mb-3">
                 <label><strong>Anio de Publicacion</strong></label>
-                <InputNumber class"form-control" @bind-Value="libro.AnoPublicacion"></InputNumber>
+                <InputNumber class="form-control" @bind-Value="libro.AnoPublicacion"></InputNumber>
                 <ValidationMessage For="(() => libro.AnoPublicacion)" />
             </div>
 
             <div class="card-footer mt-3">
-                <a hred="/libros" class="btn btn-secondary"> Volver</a>
+                <a href="/libros" class="btn btn-secondary"> Volver</a>
                 <button type="submit" class="btn btn-primary">Guardar</button>
             </div>
         </EditForm>
@@ -56,10 +46,8 @@
 
 @code{
     public Libros libro {get; set;} = new Libros();
-    public string mensajeError{get; set;} = " ";
 
     public async Task Guardar(){
-        //Verificamos si existe el titulo en la base de datos
         bool existe = await libroService.ExisteTituloLibro(libro.Titulo);
 
         if(existe)

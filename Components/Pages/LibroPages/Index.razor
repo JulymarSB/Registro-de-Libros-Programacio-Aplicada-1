@@ -1,11 +1,9 @@
-@using RegistroLibros.Services
 @page "/Libros/Index"
 @rendermode InteractiveServer
-
 @inject LibroService libroService
 @inject ToastService toastService
 
-<PageTitle>Index</PageTitle>
+<PageTitle> Index </PageTitle>
 <div class="card shadow-lg">
     <div class="card-header d-flex justify-content-between align-center mb-4">
         <h3>Consulta de Libros</h3>
@@ -13,24 +11,23 @@
 
     <div class="card-body">
         <div class="mb-3">
-            <a href="/libros/create" class="btn btn-primary">+ Crear</a>
+            <a href="/libros/create" class="btn btn-primary"> <i class="bi bi-plus-square"></i>Crear</a>
         </div>
-
         <div class="row mb-3">
-            <!-- Filtro -->
+            @*Filtro*@
             <div class="col-md-3">
                 <label><strong>Filtrar por</strong></label>
-                <select class="form-select" @bind="filtro">
+                <InputSelect class="form-select" @bind-Value="Filtro">
                     <option value="id">LibroId</option>
                     <option value="titulo">Título</option>
-                </select>
+                </InputSelect>
             </div>
 
-            <!-- Búsqueda -->
+            @*Busqueda*@
             <div class="col-md-6">
                 <label><strong>Búsqueda</strong></label>
                 <div class="input-group">
-                    <input class="form-control" @bind="valorBuscado" placeholder="Buscar..." />
+                    <input class="form-control" @bind="ValorFiltro" placeholder="Buscar..." />
                     <button class="btn btn-outline-primary" type="button" @onclick="Buscar">
                         <span class="bi bi-search"></span> Buscar
                     </button>
@@ -56,8 +53,8 @@
                         <td>@libro.Autor</td>
                         <td>@libro.AnoPublicacion</td>
                         <td>
-                            <a href="/libros/edit/@libro.LibroId" class="btn btn-warning">Editar</a>
-                            <button class="btn btn-danger" @onclick="() => Eliminar(libro.LibroId)">Eliminar</button>
+                            <a href="/libros/edit/@libro.LibroId" class="btn btn-outline-primary">Editar</a>
+                            <button class="btn btn-outline-danger" @onclick="() => Eliminar(libro.LibroId)">Eliminar</button>
                         </td>
                     </tr>
                 }
@@ -72,41 +69,36 @@
 
 @code {
     public List<Libros> ListaLibros { get; set; } = new List<Libros>();
-    
-    // Variables para el filtro y búsqueda
-    public string filtro { get; set; } = "id";
-    public string valorBuscado { get; set; } = "";
+    public string Filtro { get; set; } = string.Empty;
+    public string ValorFiltro { get; set; } = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         ListaLibros = await libroService.GetList(l => true);
     }
 
-    // Método que ejecuta el botón de Buscar
-    public async Task Buscar()
+    private async Task Buscar()
     {
-        // Si la barra está vacía, muestra todos
-        if (string.IsNullOrWhiteSpace(valorBuscado))
+        if (string.IsNullOrWhiteSpace(ValorFiltro))
         {
             ListaLibros = await libroService.GetList(l => true);
         }
         else
         {
-            // Filtra según la opción seleccionada (ID o Título)
-            if (filtro == "id" && int.TryParse(valorBuscado, out int idBuscado))
+            if (Filtro == "id" && int.TryParse(ValorFiltro, out int idBuscado))
             {
                 ListaLibros = await libroService.GetList(l => l.LibroId == idBuscado);
             }
-            else if (filtro == "titulo")
+            else if (Filtro == "titulo")
             {
-                ListaLibros = await libroService.GetList(l => l.Titulo.ToLower().Contains(valorBuscado.ToLower()));
+                ListaLibros = await libroService.GetList(l => l.Titulo.ToLower().Contains(ValorFiltro.ToLower()));
             }
         }
     }
 
-    public async Task Eliminar(int id)
+    private async Task Eliminar(int libroId)
     {
-        await libroService.Eliminar(id);
+        await libroService.Eliminar(libroId);
         ListaLibros = await libroService.GetList(l => true); // Refresca la tabla
     }
 }
