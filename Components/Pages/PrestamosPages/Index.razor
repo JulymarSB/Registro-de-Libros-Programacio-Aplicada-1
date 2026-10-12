@@ -1,7 +1,7 @@
 @page "/Prestamos/Index"
 @rendermode InteractiveServer
 @inject PrestamoService prestamoService
-@inject ToastService toastService
+@inject IToastService toastService
 @using Microsoft.AspNetCore.Components.QuickGrid
 
 
@@ -32,67 +32,71 @@
                     <PropertyColumn Property="@(p => p.FechaDevolucion)" Title="Devolucion" Format="dd/MM/yyyy" Sortable="true" />
                     
                     <TemplateColumn Title="Acciones">
-                        <a href="/Prestamos/Edit/@context.PrestamoId" class="btn btn-warning btn-sm">
-                            <i class="bi bi-pencil-square"></i>
-                        </a>
-                        <button class="btn btn-danger btn-sm" @onclick="() => MostrarModal(context.PrestamoId)">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                        <div class="d-flex gap-2">
+                            @*Boton editar*@
+                            <a href="/Prestamos/Edit/@context.PrestamoId" class="btn btn-warning btn-sm">
+                            <i class="bi bi-pencil-square"></i></a>
+
+                            @*Boton devolver*@
+                            @if (context.FechaDevolucion == null || context.FechaDevolucion == DateTime.MinValue)
+                            {
+                                <button class="btn btn-danger btn-sm" @onclick="() => AbrirModalDevolucion(context.PrestamoId)" title="Devolver">
+                                    <i class="bi bi-box-arrow-in-down"></i>
+                                </button>
+                            }
+                        </div>
                     </TemplateColumn>
                 </QuickGrid>
+                    <div class="card-footer d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <label class="me-4"><strong>Cantidad: </strong>@prestamos.Count()</label>
+                            <label><strong>Promedio de días prestados: </strong>@PromedioDiasPrestados.ToString("N2") días</label>
+                        </div>
+    
+                    </div>
             </div>
-            
-            @*Paginación del QuickGrid *@
-            <div class="card-footer d-flex justify-content-center">
+                @*Paginación del QuickGrid *@
+                <div class="card-footer d-flex justify-content-center">
                 <Paginator State="@pagination" />
             </div>
         </div>
     </div>
 </div>
 
-@*Modal de Confirmación para Eliminar*@
-@if (mostrarModal)
+@* Modal de Confirmación para Devolución *@
+@if(mostrarModalDevolucion)
 {
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title"><i class="bi bi-exclamation-triangle"></i> Confirmar Eliminacion</h5>
-                    <button type="button" class="btn-close btn-close-white" @onclick="CerrarModal"></button>
+                <div class="modal-header">
+                    <h5 class="modal-title">Devolución de Libro</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarModal"></button>
                 </div>
                 <div class="modal-body">
-                    <p>¿Estas seguro de que deseas eliminar este prestamo?</p>
-                    <p class="text-muted"><small>Al confirmar, el libro volvera a estar disponible en el sistema.</small></p>
+                    <div class="mb-3">
+                        <label class="form-label">Fecha de Devolución</label>
+                        <input type="date" class="form-control" @bind="fechaDevolucionSeleccionada" />
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" @onclick="CerrarModal">Cancelar</button>
-                    <button type="button" class="btn btn-danger" @onclick="EliminarConfirmado">
-                        <i class="bi bi-trash"></i> Eliminar
+                    <button type="button" class="btn btn-primary" @onclick="ConfirmarDevolucion">
+                        Confirmar Devolución
                     </button>
                 </div>
             </div>
         </div>
     </div>
 }
-
 @code {
     private IQueryable<Prestamos> prestamos = Enumerable.Empty<Prestamos>().AsQueryable();
     private PaginationState pagination = new PaginationState { ItemsPerPage = 5 }; 
-    
-   
-    private bool mostrarModal = false;
+    private bool mostrarModalDevolucion = false;
     private int prestamoIdSeleccionado;
+    private DateTime fechaDevolucionSeleccionada = DateTime.Now.Date;
 
-    protected override async Task OnInitializedAsync()
-    {
-        await CargarPrestamos();
-    }
-
-    private async Task CargarPrestamos()
-    {
-        var lista = await prestamoService.GetList(p => true);
-        prestamos = lista.AsQueryable();
-    }
+    private bool mostrarModal = false;
 
     private void MostrarModal(int id)
     {
@@ -102,7 +106,7 @@
 
     private void CerrarModal()
     {
-        mostrarModal = false; 
+        mostrarModalDevolucion = false; 
     }
 
     private async Task EliminarConfirmado()
@@ -110,5 +114,59 @@
         await prestamoService.Eliminar(prestamoIdSeleccionado);
         await CargarPrestamos();
         CerrarModal();
+    }
+
+    private double PromedioDiasPrestados
+    {
+        get
+        {
+            if (!prestamos.Any()) 
+            {
+                return 0;
+            }
+
+            var prestamosDevueltos = prestamos.Where(p => p.FechaDevolucion.HasValue).ToList();
+
+            if (prestamosDevueltos.Count == 0) 
+            {
+                return 0;
+            }
+            return prestamosDevueltos.Average(p => (p.FechaDevolucion.Value.Date - p.FechaPrestamo.Date).TotalDays);
+        }
+    }
+
+     protected override async Task OnInitializedAsync()
+    {
+        await CargarPrestamos();
+    }
+
+     private async Task CargarPrestamos()
+    {
+        var lista = await prestamoService.GetList(p => true);
+        prestamos = lista.AsQueryable();
+    }
+
+    private void AbrirModalDevolucion(int id)
+    {
+        prestamoIdSeleccionado = id;
+        fechaDevolucionSeleccionada = DateTime.Now.Date; 
+        mostrarModalDevolucion = true; 
+    }
+
+    private async Task ConfirmarDevolucion()
+    {
+        // Llamamos al método Devolver que recibe la fecha por parámetro
+        var exito = await prestamoService.Devolver(prestamoIdSeleccionado, fechaDevolucionSeleccionada);
+        
+        if (exito)
+        {
+            toastService.ShowSuccess("El préstamo ha sido devuelto con éxito.");
+            await CargarPrestamos(); // Refresca la tabla y recalcula el promedio
+            CerrarModal();
+        }
+        else
+        {
+            toastService.ShowError("Error al registrar la devolución. Verifique las fechas.");
+        }
     }
 }

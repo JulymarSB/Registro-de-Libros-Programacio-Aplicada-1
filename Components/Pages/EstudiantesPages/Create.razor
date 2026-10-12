@@ -1,6 +1,7 @@
 @page "/Estudiantes/Create"
+@rendermode InteractiveServer
 @inject EstudiantesService estudiantesService
-@inject ToastService toastService
+@inject IToastService toastService
 @inject NavigationManager navigationManager
 
 <PageTitle>Crear Estudiante</PageTitle>
@@ -50,7 +51,7 @@
     public int EstudianteId{ get; set; }
 
     [SupplyParameterFromForm]
-    public Estudiantes Estudiante { get; set; } = new Estudiantes();
+    public Estudiantes Estudiante { get; set; } = new();
     protected override async Task OnInitializedAsync()
     {
         Estudiante.FechaNacimiento = DateTime.Today;
