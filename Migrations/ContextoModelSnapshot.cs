@@ -65,6 +65,9 @@ namespace RegistroLibros.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("CantidadDisponible")
+                        .HasColumnType("int");
+
                     b.Property<bool>("Disponible")
                         .HasColumnType("bit");
 
@@ -88,7 +91,7 @@ namespace RegistroLibros.Migrations
                     b.Property<int>("EstudianteId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("FechaDevolucion")
+                    b.Property<DateTime?>("FechaDevolucion")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("FechaPrestamo")
@@ -99,7 +102,30 @@ namespace RegistroLibros.Migrations
 
                     b.HasKey("PrestamoId");
 
+                    b.HasIndex("EstudianteId");
+
+                    b.HasIndex("LibroId");
+
                     b.ToTable("Prestamos");
+                });
+
+            modelBuilder.Entity("RegistroLibros.Models.Prestamos", b =>
+                {
+                    b.HasOne("RegistroLibros.Models.Estudiantes", "Estudiante")
+                        .WithMany()
+                        .HasForeignKey("EstudianteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RegistroLibros.Models.Libros", "Libro")
+                        .WithMany()
+                        .HasForeignKey("LibroId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Estudiante");
+
+                    b.Navigation("Libro");
                 });
 #pragma warning restore 612, 618
         }

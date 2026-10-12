@@ -7,23 +7,31 @@ using RegistroLibros.Models;
 namespace RegistroLibros.Services;
 
 public class LibroService(IDbContextFactory<Contexto> contextFactory)
-    :Aplicada1.Core.IService<Libros, int>
+    :IServiceResult<Libros, int>
 {
-     public async Task<bool> Guardar(Libros libro)
+     public async Task<Result> Guardar(Libros libro)
     {
+        if (!await ExisteTituloLibro(libro.Titulo))
+        {
+            return Result.Success(false);
+        }
+
         if (!await Existe(libro.LibroId))
         {
-            return await Insertar(libro);
+            var inserto = await Insertar(libro);
+            return Result.Success(inserto);
         }
         else
         {
-            return await Modificar(libro);
+            var modifico = await Modificar(libro);
+            return Result.Success(modifico);
         }
     }
     public async Task<bool> Existe(int libroid)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
-        return await contexto.Libros.AnyAsync(l => l.LibroId == libroid);
+        return await contexto.Libros.
+        AnyAsync(l => l.LibroId == libroid);
     }
     public async Task<bool> ExisteTituloLibro(String titulo)
     {
@@ -46,31 +54,30 @@ public class LibroService(IDbContextFactory<Contexto> contextFactory)
         return await contexto.SaveChangesAsync() > 0;
     }
 
-    public async Task<Libros?> Buscar(int libroId)
-    {
-        await using var contexto = await contextFactory.CreateDbContextAsync();
-        return await contexto.Libros.FirstOrDefaultAsync(l => l.LibroId ==  libroId);
-    }
-
-    public async Task<bool> Eliminar(int libroId)
+    public async Task<Result<Libros?>> Buscar(int libroId)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
         return await contexto.Libros
-        .Where(l => l.LibroId == libroId)
-        .ExecuteDeleteAsync() > 0;
+        .FirstOrDefaultAsync(l => l.LibroId ==  libroId);
     }
 
-    public async Task<List<Libros>> GetList(Expression<Func<Libros, bool>> criterio)
+    public async Task<Result> Eliminar(int libroId)
+    {
+        await using var contexto = await contextFactory.CreateDbContextAsync();
+
+        var eliminado = await contexto.Libros
+        .Where(l => l.LibroId == libroId)
+        .ExecuteDeleteAsync() > 0;
+
+        return Result.Success(eliminado);
+    }
+
+    public async Task<Result<List<Libros>>> GetList(Expression<Func<Libros, bool>> criterio)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
         return await contexto.Libros
         .Where(criterio)
         .AsNoTracking()
         .ToListAsync();
-    }
-
-    internal async Task<bool> Existe(string titulo)
-    {
-        throw new NotImplementedException();
     }
 }

@@ -1,7 +1,8 @@
 @page "/Libros/Index"
 @rendermode InteractiveServer
 @inject LibroService libroService
-@inject ToastService toastService
+@inject IToastService toastService
+@inject NavigationManager navigationManager
 
 <PageTitle> Index </PageTitle>
 <div class="card shadow-lg">
@@ -51,7 +52,7 @@
                         <td>@libro.LibroId</td>
                         <td>@libro.Titulo</td>
                         <td>@libro.Autor</td>
-                        <td>@libro.AnoPublicacion</td>
+                        <td>@libro.AnioPublicacion</td>
                         <td>
                             <a href="/libros/edit/@libro.LibroId" class="btn btn-outline-primary">Editar</a>
                             <button class="btn btn-outline-danger" @onclick="() => Eliminar(libro.LibroId)">Eliminar</button>
@@ -71,34 +72,51 @@
     public List<Libros> ListaLibros { get; set; } = new List<Libros>();
     public string Filtro { get; set; } = string.Empty;
     public string ValorFiltro { get; set; } = string.Empty;
-
     protected override async Task OnInitializedAsync()
     {
-        ListaLibros = await libroService.GetList(l => true);
+        var result = await libroService.GetList(l => l.LibroId >0);
+        result.OnSuccess(libro => ListaLibros = libro!);
     }
 
     private async Task Buscar()
     {
-        if (string.IsNullOrWhiteSpace(ValorFiltro))
+        if (ValorFiltro.Trim() != "")
         {
-            ListaLibros = await libroService.GetList(l => true);
+            if (Filtro == "Titulo")
+            {
+                var result = await libroService.GetList(l => l.Titulo.ToLower().Contains(ValorFiltro.ToLower()));
+                result.OnSuccess(libros => ListaLibros = libros);
+            }
+            else if (Filtro == "AnoPublicacion")
+            {
+                if (int.TryParse(ValorFiltro, out int anio))
+                {
+                    var result = await libroService.GetList(l => l.AnioPublicacion == anio);
+                    result.OnSuccess(libros => ListaLibros = libros);
+                }
+            }
         }
         else
         {
-            if (Filtro == "id" && int.TryParse(ValorFiltro, out int idBuscado))
-            {
-                ListaLibros = await libroService.GetList(l => l.LibroId == idBuscado);
-            }
-            else if (Filtro == "titulo")
-            {
-                ListaLibros = await libroService.GetList(l => l.Titulo.ToLower().Contains(ValorFiltro.ToLower()));
-            }
+            var result = await libroService.GetList(l => l.LibroId > 0);
+            result.OnSuccess(libros => ListaLibros = libros);
         }
+        
     }
 
     private async Task Eliminar(int libroId)
     {
-        await libroService.Eliminar(libroId);
-        ListaLibros = await libroService.GetList(l => true); // Refresca la tabla
+        var result = await libroService.Eliminar(libroId);
+
+        result.OnSuccess(() =>
+        {
+            toastService.ShowSuccess("Se ha eliminado correctamente");
+            navigationManager.NavigateTo("/Libro/Index");
+        });
+
+        result.OnFailure(() =>
+        {
+            toastService.ShowError("No se ha podido eliminar correctamente");
+        });
     }
 }

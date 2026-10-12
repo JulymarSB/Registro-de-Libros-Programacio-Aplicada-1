@@ -1,6 +1,7 @@
 @page "/Estudiantes/Create"
+@rendermode InteractiveServer
 @inject EstudiantesService estudiantesService
-@inject ToastService toastService
+@inject IToastService toastService
 @inject NavigationManager navigationManager
 
 <PageTitle>Crear Estudiante</PageTitle>
@@ -50,7 +51,7 @@
     public int EstudianteId{ get; set; }
 
     [SupplyParameterFromForm]
-    public Estudiantes Estudiante { get; set; } = new Estudiantes();
+    public Estudiantes Estudiante { get; set; } = new();
     protected override async Task OnInitializedAsync()
     {
         Estudiante.FechaNacimiento = DateTime.Today;
@@ -58,19 +59,17 @@
 
     private async Task Guardar()
     {
+var result = await estudiantesService.Guardar(Estudiante);
 
-        if(await estudiantesService.ExisteNombre(Estudiante.Nombres)){
-            toastService.MostrarError( "Ya existe un estudiante registrado con este nombre.");
-            return;
-        }
-
-        var guardado = await estudiantesService.Guardar(Estudiante);
-        if(guardado){
-            navigationManager.NavigateTo("/Estudiantes/Index");
-        }
-        else 
+        result.OnSuccess(() =>
         {
-            toastService.MostrarError("No se pudo guardar el registro en la base de datos.");
-        }
+            toastService.ShowSuccess("Estudiante Guardado Correctamente");
+            navigationManager.NavigateTo("/Estudiante/Index");
+        });
+
+        result.OnFailure(() =>
+        {
+            toastService.ShowError("Ya existe un estudiante con ese nombre");
+        });
     }
 }

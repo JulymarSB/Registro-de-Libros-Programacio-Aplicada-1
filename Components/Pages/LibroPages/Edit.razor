@@ -2,8 +2,8 @@
 @rendermode InteractiveServer
 
 @inject LibroService libroService
-@inject NavigationManager navitationManager
-@inject ToastService toastService
+@inject NavigationManager navigationManager
+@inject IToastService toastService
 
 <div class="card shadow">
     <div class="card-header">
@@ -11,29 +11,29 @@
     </div>
 
     <div class="card-body">
-        <EditForm Model="libro" OnValidSubmit="Modificar">
+        <EditForm Model="Libro" OnValidSubmit="Modificar">
             <DataAnnotationsValidator/>
             <div class="mb-3">
                 <label><strong>LibroId</strong></label>
-                <InputNumber class="form-control" @bind-Value="libro.LibroId" readonly></InputNumber>
+                <InputNumber class="form-control" @bind-Value="Libro.LibroId" readonly></InputNumber>
             </div>
 
             <div class="mb-3">
                 <label><strong>Titulo</strong></label>
-                <InputText class="form-control" @bind-Value="libro.Titulo"></InputText>
-                <ValidationMessage For="(() => libro.Titulo)"/>
+                <InputText class="form-control" @bind-Value="Libro.Titulo"></InputText>
+                <ValidationMessage For="(() => Libro.Titulo)"/>
             </div>
 
             <div class="mb-3">
                 <label><strong>Autor</strong></label>
-                <InputText class="form-control" @bind-Value="libro.Autor"></InputText>
-                <ValidationMessage For="(()=>libro.Autor)"/>
+                <InputText class="form-control" @bind-Value="Libro.Autor"></InputText>
+                <ValidationMessage For="(()=>Libro.Autor)"/>
             </div>
 
             <div class="mb-3">
                 <label><strong>Anio de Publicacion</strong></label>
-                <InputNumber class="form-control" @bind-Value="libro.AnoPublicacion"></InputNumber>
-                <ValidationMessage For="(() => libro.AnoPublicacion)"/>
+                <InputNumber class="form-control" @bind-Value="Libro.AnioPublicacion"></InputNumber>
+                <ValidationMessage For="(() => Libro.AnioPublicacion)"/>
             </div>
 
             <div class="card-footer mt-3">
@@ -46,19 +46,25 @@
 @code {
     [Parameter]
     public int LibroId {get; set;}
-    public Libros libro {get; set;} = new();
+    public Libros Libro {get; set;} = new();
 
     protected override async Task OnInitializedAsync(){
-        var encontrado = await libroService.Buscar(LibroId);
-        if (encontrado != null){
-            libro = encontrado;
-        }
+        var result = await libroService.Buscar(LibroId);
+        result.OnSuccess(libro => Libro = libro!);
     }
 
     private async Task Modificar(){
-        if(await libroService.Guardar(libro))
+var result = await libroService.Guardar(Libro);
+
+        result.OnSuccess(() =>
         {
-        navitationManager.NavigateTo("/libros");
-        }
+            toastService.ShowSuccess("Se ha modificado exitosamente");
+            navigationManager.NavigateTo("/Libro/Index");
+        });
+
+        result.OnFailure(() =>
+        {
+            toastService.ShowError("Ya existe un libro con este título");
+        });
     }
 }
