@@ -59,19 +59,17 @@
 
     private async Task Guardar()
     {
+var result = await estudiantesService.Guardar(Estudiante);
 
-        if(await estudiantesService.ExisteNombre(Estudiante.Nombres)){
-            toastService.MostrarError( "Ya existe un estudiante registrado con este nombre.");
-            return;
-        }
-
-        var guardado = await estudiantesService.Guardar(Estudiante);
-        if(guardado){
-            navigationManager.NavigateTo("/Estudiantes/Index");
-        }
-        else 
+        result.OnSuccess(() =>
         {
-            toastService.MostrarError("No se pudo guardar el registro en la base de datos.");
-        }
+            toastService.ShowSuccess("Estudiante Guardado Correctamente");
+            navigationManager.NavigateTo("/Estudiante/Index");
+        });
+
+        result.OnFailure(() =>
+        {
+            toastService.ShowError("Ya existe un estudiante con ese nombre");
+        });
     }
 }

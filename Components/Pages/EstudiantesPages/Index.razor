@@ -88,32 +88,52 @@
 
     public async Task Buscar()
     {
-          if (string.IsNullOrWhiteSpace(ValorFiltro))
+        if (ValorFiltro.Trim() != "")
         {
-            ListaEstudiantes = await estudiantesService.GetList(l => true);
+            if (Filtro == "Nombres")
+            {
+                var result = await estudiantesService.GetList(e => e.Nombres.ToLower().Contains(ValorFiltro.ToLower()));
+                result.OnSuccess(estudiantes => ListaEstudiantes = estudiantes);
+            }
+            else if (Filtro == "Direccion")
+            {
+                var result = await estudiantesService.GetList(e => e.Direccion.ToLower().Contains(ValorFiltro.ToLower()));
+                result.OnSuccess(estudiantes => ListaEstudiantes = estudiantes);
+            }
+            else if (Filtro == "Email")
+            {
+                var result = await estudiantesService.GetList(e => e.Email.ToLower().Contains(ValorFiltro.ToLower()));
+                result.OnSuccess(estudiantes => ListaEstudiantes = estudiantes);
+            }
         }
         else
         {
-            if (Filtro == "id" && int.TryParse(ValorFiltro, out int idBuscado))
-            {
-                ListaEstudiantes = await estudiantesService.GetList(l => l.EstudianteId == idBuscado);
-            }
-            else if (Filtro == "titulo")
-            {
-                ListaEstudiantes = await estudiantesService.GetList(l => l.Nombres.ToLower().Contains(ValorFiltro.ToLower()));
-            }
+            var result = await estudiantesService.GetList(e => e.EstudianteId > 0);
+            result.OnSuccess(estudiantes => ListaEstudiantes = estudiantes);
         }
     }
 
     private async Task Eliminar(int estudianteId)
     {
-        await estudiantesService.Eliminar(estudianteId);
-        ListaEstudiantes = await estudiantesService.GetList(l => true);
+        var result = await estudiantesService.Eliminar(estudianteId);
+
+        result.OnSuccess(async () =>
+        {
+            toastService.ShowSuccess("Estudiante eliminado correctamente.");
+            var listResult = await estudiantesService.GetList(l => true);
+            listResult.OnSuccess(estudiantes => ListaEstudiantes = estudiantes);
+        });
+
+        result.OnFailure(() =>
+        {
+            toastService.ShowError("No se pudo eliminar el estudiante.");
+        });
     }
     public async Task Restablecer()
     {
         Filtro = "";
         ValorFiltro = "";
-        ListaEstudiantes = await estudiantesService.GetList (e => true);
+        var result = await estudiantesService.GetList(e => true);
+        result.OnSuccess(estudiantes => ListaEstudiantes = estudiantes);
     }
 }
