@@ -58,7 +58,7 @@ namespace RegistroLibros.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LibroId"));
 
-                    b.Property<int>("AnoPublicacion")
+                    b.Property<int>("AnioPublicacion")
                         .HasColumnType("int");
 
                     b.Property<string>("Autor")

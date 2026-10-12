@@ -75,7 +75,7 @@
     </div>
 </div>
 
-@code {
+   @code {
     [Parameter]
     public int PrestamoId { get; set; }
 
@@ -86,26 +86,44 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // 1. Buscar el préstamo de forma segura con Result
+        var resultPrestamo = await prestamoService.Buscar(PrestamoId);
+        resultPrestamo.OnSuccess(p => prestamo = p ?? new Prestamos());
 
-        prestamo = await prestamoService.Buscar(PrestamoId) ?? new Prestamos();
+        // 2. Obtener la lista de estudiantes con Result
+        var resultEstudiantes = await estudiantesService.GetList(e => true);
+        resultEstudiantes.OnSuccess(listaEstudiantes => estudiantes = listaEstudiantes);
 
-        estudiantes = await estudiantesService.GetList(e => true);
-        
-        libros = await libroService.GetList(l => l.Disponible == true || l.LibroId == prestamo.LibroId);
+        // 3. Obtener la lista de libros con Result
+        var resultLibros = await libroService.GetList(l => l.Disponible == true || l.LibroId == prestamo.LibroId);
+        resultLibros.OnSuccess(listaLibros => libros = listaLibros);
     }
 
     private async Task Modificar()
     {
+        if (prestamo.EstudianteId == 0)
+        {
+            toastService.ShowError("Debe seleccionar un estudiante.");
+            return;
+        }
 
-        var guardo = await prestamoService.Guardar(prestamo);
+        if (prestamo.LibroId == 0)
+        {
+            toastService.ShowError("Debe seleccionar un libro.");
+            return;
+        }
+
+        var result = await prestamoService.Guardar(prestamo);
         
-        if (guardo)
+        result.OnSuccess(() =>
         {
+            toastService.ShowSuccess("Préstamo modificado correctamente.");
             navigationManager.NavigateTo("/Prestamos/Index");
-        }
-        else
+        });
+
+        result.OnFailure(() =>
         {
-            toastService.MostrarError("Hubo un error al modificar el prestamo.");
-        }
+            toastService.ShowError("Hubo un error al modificar el prestamo.");
+        });
     }
 }

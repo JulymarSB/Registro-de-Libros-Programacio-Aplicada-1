@@ -19,7 +19,7 @@
 
             <div class="card-body">
                 <EditForm Model="prestamo" OnValidSubmit="Guardar">
-                    <DataAnnotationsValidator />
+                    <DataAnnotationsValidator/>
                     @*Selector de estudiante*@
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -92,34 +92,38 @@
 
     protected override async Task OnInitializedAsync()
     {
-        estudiantes = await estudiantesService.GetList(e => true);
-        libros = await libroService.GetList(l => l.Disponible);
+        var resultEstudiantes = await estudiantesService.GetList(e => true);
+        resultEstudiantes.OnSuccess(listaEstudiantes => estudiantes = listaEstudiantes);
+
+        var resultLibros = await libroService.GetList(l => l.Disponible);
+        resultLibros.OnSuccess(listaLibros => libros = listaLibros);
     }
 
     private async Task Guardar()
     {
-
         if(prestamo.EstudianteId == 0)
         {
-            toastService.MostrarError("Debe seleccionar un estudiante.");
+            toastService.ShowError("Debe seleccionar un estudiante.");
             return;
         }
 
         if(prestamo.LibroId == 0)
         {
-            toastService.MostrarError("Debe seleccionar un libro.");
+            toastService.ShowError("Debe seleccionar un libro.");
             return;
         }
 
-        var guardo = await prestamoService.Guardar(prestamo);
+        var result = await prestamoService.Guardar(prestamo);
 
-        if(guardo)
+        result.OnSuccess(() =>
         {
-            navigationManager.NavigateTo("/Prestamos/Index/");
-        }
-        else
+            toastService.ShowSuccess("Préstamo guardado correctamente.");
+            navigationManager.NavigateTo("/Prestamos/Index");
+        });
+
+        result.OnFailure(() =>
         {
-            toastService.MostrarError("No se pudo guardar.");
-        }
+            toastService.ShowError("No se pudo guardar.");
+        });
     }
 }
