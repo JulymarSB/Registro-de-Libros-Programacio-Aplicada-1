@@ -50,7 +50,6 @@
     [Parameter]
     public int EstudianteId{ get; set; }
 
-    [SupplyParameterFromForm]
     public Estudiantes Estudiante { get; set; } = new();
     protected override async Task OnInitializedAsync()
     {
