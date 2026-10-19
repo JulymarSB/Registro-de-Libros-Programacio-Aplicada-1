@@ -5,7 +5,7 @@
 @using Microsoft.AspNetCore.Components.QuickGrid
 
 
-<PageTitle> Listado de Préstamos </PageTitle>
+<PageTitle> Listado de Préstamos </PageTitle> 
 
 <div class="container">
     <div class="card shadow-lg">
@@ -111,8 +111,8 @@
 
     private async Task EliminarConfirmado()
     {
-        await prestamoService.Eliminar(prestamoIdSeleccionado);
-        await CargarPrestamos();
+        var result = await prestamoService.Eliminar(prestamoIdSeleccionado);
+        result.OnSuccess(async () => await CargarPrestamos());
         CerrarModal();
     }
 
@@ -135,15 +135,18 @@
         }
     }
 
-     protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
         await CargarPrestamos();
     }
 
-     private async Task CargarPrestamos()
+    private async Task CargarPrestamos()
     {
-        var lista = await prestamoService.GetList(p => true);
-        prestamos = lista.AsQueryable();
+        var result = await prestamoService.GetList(p => true);
+        result.OnSuccess(lista => 
+        {
+            prestamos = lista.AsQueryable();
+        });
     }
 
     private void AbrirModalDevolucion(int id)
@@ -155,18 +158,18 @@
 
     private async Task ConfirmarDevolucion()
     {
-        // Llamamos al método Devolver que recibe la fecha por parámetro
-        var exito = await prestamoService.Devolver(prestamoIdSeleccionado, fechaDevolucionSeleccionada);
+        var result = await prestamoService.Devolver(prestamoIdSeleccionado, fechaDevolucionSeleccionada);
         
-        if (exito)
+        result.OnSuccess(async () =>
         {
             toastService.ShowSuccess("El préstamo ha sido devuelto con éxito.");
-            await CargarPrestamos(); // Refresca la tabla y recalcula el promedio
+            await CargarPrestamos(); 
             CerrarModal();
-        }
-        else
+        });
+
+        result.OnFailure(() =>
         {
             toastService.ShowError("Error al registrar la devolución. Verifique las fechas.");
-        }
+        });
     }
 }

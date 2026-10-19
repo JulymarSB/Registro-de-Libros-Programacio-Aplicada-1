@@ -10,4 +10,6 @@ public class Contexto : DbContext
     public virtual DbSet<Libros> Libros {get; set;}
     public virtual DbSet<Estudiantes> Estudiantes { get; set; }
     public virtual DbSet<Prestamos> Prestamos { get; set; }
+
+    public virtual DbSet<Entradas> Entradas { get; set; }
 }

@@ -3,6 +3,7 @@ using RegistroLibros.Context;
 using RegistroLibros.Services;
 using Microsoft.EntityFrameworkCore;
 using Blazored.Toast;
+using RegistroLibros.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 var ConStr = builder.Configuration.GetConnectionString("ConStr");
@@ -11,6 +12,7 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddScoped<LibroService>();
 builder.Services.AddScoped<EstudiantesService>();
 builder.Services.AddScoped<PrestamoService>();
+builder.Services.AddScoped<EntradaServices>();
 builder.Services.AddBlazoredToast();
 // Add services to the container.
 var app = builder.Build();
