@@ -69,7 +69,7 @@ public class PrestamoService(IDbContextFactory<Contexto> contextFactory) : IServ
     private async Task<bool> Insertar(Prestamos prestamo)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
-        var estudianteConPrestamoActivo = await contexto.Prestamos.Include(p => p.Libro).AnyAsync(p => p.EstudianteId == p.EstudianteId && p.Libro.Disponible == false);
+        var estudianteConPrestamoActivo = await contexto.Prestamos.Include(p => p.Libro).AnyAsync(p => p.EstudianteId == prestamo.EstudianteId && p.FechaDevolucion == null);
         if(estudianteConPrestamoActivo)
         {
             return false;
