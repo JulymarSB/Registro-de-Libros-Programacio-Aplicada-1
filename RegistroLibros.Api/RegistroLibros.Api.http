@@ -1,0 +1,77 @@
+@RegistroLibros.Api_HostAddress = http://localhost:5160
+@id = 8
+
+### Obtener libros
+GET {{RegistroLibros.Api_HostAddress}}/api/libros
+Accept: application/json
+
+### Buscar libro por ID
+GET {{RegistroLibros.Api_HostAddress}}/api/libros/{{id}}
+
+### Crear/Guardar un libro
+POST {{RegistroLibros.Api_HostAddress}}/api/libros
+Content-Type: application/json
+
+{
+  "libroId": 0,
+  "titulo": "Cien Años de Soledad",
+  "autor": "Gabriel García Márquez",
+  "existencia": 10
+}
+
+### Eliminar un libro por ID
+DELETE {{RegistroLibros.Api_HostAddress}}/api/libros/{{id}}
+
+### Obtener todos los estudiantes
+GET {{RegistroLibros.Api_HostAddress}}/api/estudiantes
+Accept: application/json
+
+### Buscar un estudiante por ID
+GET {{RegistroLibros.Api_HostAddress}}/api/estudiantes/{{id}}
+
+### Crear/Guardar un estudiante
+POST {{RegistroLibros.Api_HostAddress}}/api/estudiantes
+Content-Type: application/json
+
+{
+  "estudianteId": 0,
+  "nombres": "Juan Pérez",
+  "email": "juan.perez@email.com",
+  "direccion": "San Francisco de Macoris",
+  "fechaNacimiento": "2002-11-02T00:00:00"
+
+}
+
+### Eliminar un estudiante por ID
+DELETE {{RegistroLibros.Api_HostAddress}}/api/estudiantes/{{id}}
+
+
+### Crear/Guardar un prestamo
+POST {{RegistroLibros.Api_HostAddress}}/api/prestamos
+Content-Type: application/json
+
+{
+  "prestamoId": 0,
+  "estudianteId": 1,
+  "libroId": 1,
+  "fecha": "2026-11-02T00:00:00",
+  "comentario": "Préstamo para proyecto final"
+}
+### Obtener todos los prestamos
+GET {{RegistroLibros.Api_HostAddress}}/api/prestamos
+Accept: application/json
+
+
+### Buscar un prestamo por ID
+GET {{RegistroLibros.Api_HostAddress}}/api/prestamos/{{id}}
+
+
+### Eliminar un prestamo por ID
+DELETE {{RegistroLibros.Api_HostAddress}}/api/prestamos/{{id}}
+
+GET {{RegistroLibros.Api_HostAddress}}/openapi/v1.json
+Accept: application/json
+
+
+GET {{RegistroLibros.Api_HostAddress}}/weatherforecast/
+Accept: application/json

@@ -6,8 +6,8 @@ using Blazored.Toast;
 using RegistroLibros.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-var ConStr = builder.Configuration.GetConnectionString("ConStr");
-builder.Services.AddDbContextFactory<Contexto>(opciones => opciones.UseSqlServer(ConStr));
+var SqlConStr = builder.Configuration.GetConnectionString("SqlConStr");
+builder.Services.AddDbContextFactory<Contexto>(opciones => opciones.UseSqlServer(SqlConStr));
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddScoped<LibroService>();
 builder.Services.AddScoped<EstudiantesService>();

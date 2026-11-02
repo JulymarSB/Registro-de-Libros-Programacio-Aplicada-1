@@ -1,0 +1,85 @@
+﻿@page "/estudiantes/edit/{EstudianteId:int}"
+@rendermode InteractiveServer
+
+@inject EstudiantesService estudianteService
+@inject NavigationManager navigationManager
+@inject IToastService toastService
+
+<div class="card shadow">
+    <div class="card-header">
+        <h3>Editar Estudiante</h3>
+    </div>
+
+    <div class="card-body">
+        <EditForm Model="estudiante" OnValidSubmit="Guardar"> 
+            <DataAnnotationsValidator />
+
+            <div class="mb-3">
+                <label><strong>EstudianteId</strong></label>
+                <InputNumber class="form-control" @bind-Value="estudiante.EstudianteId" readonly />
+            </div>
+
+            <div class="mb-3">
+                <label><strong>Nombres</strong></label>
+                <InputText class="form-control" @bind-Value="estudiante.Nombres" />
+                <ValidationMessage For="(() => estudiante.Nombres)" />
+            </div>
+
+            <div class="mb-3">
+                <label><strong>Email</strong></label>
+                <InputText class="form-control" @bind-Value="estudiante.Email" />
+                <ValidationMessage For="(() => estudiante.Email)" />
+            </div>
+
+            <div class="mb-3">
+                <label><strong>Dirección</strong></label>
+                <InputText class="form-control" @bind-Value="estudiante.Direccion" />
+                <ValidationMessage For="(() => estudiante.Direccion)" />
+            </div>
+
+            <div class="card-footer mt-3">
+                <a href="/Estudiantes/Index" class="btn btn-secondary">Volver</a>
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int EstudianteId { get; set; }
+
+    public Estudiantes estudiante { get; set; } = new Estudiantes();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (EstudianteId > 0)
+        {
+            var result = await estudianteService.Buscar(EstudianteId);
+            if (result.IsSuccess && result.Value != null)
+            {
+                estudiante = result.Value;
+            }
+            else
+            {
+                toastService.ShowError("Estudiante no encontrado");
+                navigationManager.NavigateTo("/estudiantes");
+            }
+        }
+    }
+
+    public async Task Guardar()
+    {
+        var result = await estudianteService.Guardar(estudiante);
+
+        if (result.IsSuccess)
+        {
+            toastService.ShowSuccess("Estudiante guardado correctamente");
+            navigationManager.NavigateTo("/estudiantes");
+        }
+        else
+        {
+            toastService.ShowError("No se pudo guardar los cambios del estudiante");
+        }
+    }
+}

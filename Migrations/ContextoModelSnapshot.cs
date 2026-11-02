@@ -17,7 +17,7 @@ namespace RegistroLibros.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -159,7 +159,7 @@ namespace RegistroLibros.Migrations
             modelBuilder.Entity("RegistroLibros.Models.EntradaDetalle", b =>
                 {
                     b.HasOne("RegistroLibros.Models.Entradas", "Entrada")
-                        .WithMany("EntradasDetalle")
+                        .WithMany("EntradaDetalle")
                         .HasForeignKey("EntradaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -188,7 +188,7 @@ namespace RegistroLibros.Migrations
 
             modelBuilder.Entity("RegistroLibros.Models.Entradas", b =>
                 {
-                    b.Navigation("EntradasDetalle");
+                    b.Navigation("EntradaDetalle");
                 });
 #pragma warning restore 612, 618
         }

@@ -68,7 +68,8 @@
                             <td>@estudiante.Email</td>
                             <td>@estudiante.FechaNacimiento.ToString("dd/MM/yyyy")</td>
                             <td>
-                                <a href="/Estudiantes/Edit/@estudiante.EstudianteId" class="btn btn-outline-primary btn-sm">Editar</a>
+                                <a href="/Estudiantes/Edit/@estudiante.EstudianteId" class="btn btn-warning btn-sm">
+                                    <i class="bi bi-pencil-square"></i></a>
                                 <button class="btn btn-outline-danger" @onclick="() => Eliminar(estudiante.EstudianteId)">Eliminar</button>
 
                             </td>
@@ -86,6 +87,19 @@
     public string Filtro { get; set; } = string.Empty;
     public string ValorFiltro { get; set; } = string.Empty;
 
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarEstudiantes();
+    }
+
+    public async Task CargarEstudiantes()
+    {
+        var result = await estudiantesService.GetList(e => true);
+        if (result.IsSuccess && result.Value != null)
+        {
+            ListaEstudiantes = result.Value;
+        }
+    }
     public async Task Buscar()
     {
         if (ValorFiltro.Trim() != "")

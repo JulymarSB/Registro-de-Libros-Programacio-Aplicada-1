@@ -4,3 +4,10 @@ obj/
 *.user
 *.suo
 Publicacion/
+appsettings.json
+appsettings.Development.json
+**/appsettings.json
+**/appsettings.Development.json
+appsettings.json
+appsettings.Development.json
+**/appsettings*.json
