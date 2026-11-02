@@ -1,0 +1,173 @@
+@page "/Entradas/Index"
+@inject EntradaServices entradasService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Registro de Entradas</PageTitle>
+
+<div class="container my-4">
+    <div class="card shadow-sm border rounded-3">
+        @* Encabezado con título y botón Crear *@
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+            <h4 class="card-title mb-0 text-secondary fw-semibold">Registro de Entradas</h4>
+            <a href="Entradas/Create" class="btn btn-primary fw-semibold">
+                <i class="bi bi-plus-square me-1"></i> Crear
+            </a>
+        </div>
+
+        <div class="card-body p-4">
+            @* Fila 1: Filtro y Búsqueda *@
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label class="form-label text-secondary fw-semibold">Filtrar por</label>
+                    <select class="form-select" @bind="filtrarPor">
+                        <option value="">Elija una opción</option>
+                        <option value="EntradaId">Entrada ID</option>
+                        <option value="Concepto">Concepto</option>
+                    </select>
+                </div>
+
+                <div class="col-md-8">
+                    <label class="form-label text-secondary fw-semibold">Búsqueda</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Buscar" @bind="valorBusqueda" />
+                        <button type="button" class="btn btn-outline-secondary" @onclick="Buscar">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" @onclick="Restablecer">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            @* Fila 2: Rango de Fechas *@
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label text-secondary fw-semibold">Desde</label>
+                    <input type="date" class="form-control" @bind="fechaDesde" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-secondary fw-semibold">Hasta</label>
+                    <input type="date" class="form-control" @bind="fechaHasta" />
+                </div>
+            </div>
+
+            @* Tabla de Registros *@
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="border-bottom text-secondary">
+                        <tr>
+                            <th>EntradaId</th>
+                            <th>Fecha</th>
+                            <th>Concepto</th>
+                            <th>Total</th>
+                            <th class="text-end">Opciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (listaEntradas == null)
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">Cargando registros...</td>
+                            </tr>
+                        }
+                        else if (listaEntradas.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">No se encontraron registros.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in listaEntradas)
+                            {
+                                <tr>
+                                    <td>@item.EntradaId</td>
+                                    <td>@item.Fecha.ToString("dd/MM/yyyy")</td>
+                                    <td>@item.Concepto</td>
+                                    <td>@item.Total</td>
+                                    <td class="text-end">
+                                        <a href="Entradas/Edit/@item.EntradaId" class="btn btn-outline-secondary btn-sm">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @* Pie de página con resumen: Cantidad y Total *@
+        <div class="card-footer bg-light py-3 d-flex justify-content-between align-items-center">
+            <span class="fw-bold text-secondary">Cantidad: @(listaEntradas?.Count ?? 0)</span>
+            <span class="fw-bold text-secondary">Total: @(listaEntradas?.Sum(e => e.Total) ?? 0)</span>
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<Entradas> listaEntradas { get; set; } = new List<Entradas>();
+
+    private string filtrarPor { get; set; } = string.Empty;
+    private string valorBusqueda { get; set; } = string.Empty;
+    private DateTime? fechaDesde { get; set; }
+    private DateTime? fechaHasta { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarLista();
+    }
+
+    private async Task CargarLista()
+    {
+        var result = await entradasService.GetList(e => true);
+        if (result.IsSuccess && result.Value != null)
+        {
+            listaEntradas = result.Value;
+        }
+    }
+
+    public async Task Buscar()
+    {
+        var result = await entradasService.GetList(e => true);
+        if (!result.IsSuccess || result.Value == null) return;
+
+        var consulta = result.Value.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(filtrarPor) && !string.IsNullOrWhiteSpace(valorBusqueda))
+        {
+            if (filtrarPor == "EntradaId" && int.TryParse(valorBusqueda, out int id))
+            {
+                consulta = consulta.Where(e => e.EntradaId == id);
+            }
+            else if (filtrarPor == "Concepto")
+            {
+                consulta = consulta.Where(e => e.Concepto.Contains(valorBusqueda, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
+        if (fechaDesde.HasValue)
+        {
+            consulta = consulta.Where(e => e.Fecha.Date >= fechaDesde.Value.Date);
+        }
+
+        if (fechaHasta.HasValue)
+        {
+            consulta = consulta.Where(e => e.Fecha.Date <= fechaHasta.Value.Date);
+        }
+
+        listaEntradas = consulta.ToList();
+    }
+
+    public async Task Restablecer()
+    {
+        filtrarPor = string.Empty;
+        valorBusqueda = string.Empty;
+        fechaDesde = null;
+        fechaHasta = null;
+        await CargarLista();
+    }
+}

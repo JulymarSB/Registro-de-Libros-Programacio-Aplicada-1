@@ -22,6 +22,53 @@ namespace RegistroLibros.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("RegistroLibros.Models.EntradaDetalle", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EntradaId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LibroId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EntradaId");
+
+                    b.ToTable("EntradaDetalle");
+                });
+
+            modelBuilder.Entity("RegistroLibros.Models.Entradas", b =>
+                {
+                    b.Property<int>("EntradaId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EntradaId"));
+
+                    b.Property<string>("Concepto")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Total")
+                        .HasColumnType("int");
+
+                    b.HasKey("EntradaId");
+
+                    b.ToTable("Entradas");
+                });
+
             modelBuilder.Entity("RegistroLibros.Models.Estudiantes", b =>
                 {
                     b.Property<int>("EstudianteId")
@@ -58,7 +105,7 @@ namespace RegistroLibros.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LibroId"));
 
-                    b.Property<int>("AnoPublicacion")
+                    b.Property<int>("AnioPublicacion")
                         .HasColumnType("int");
 
                     b.Property<string>("Autor")
@@ -109,6 +156,17 @@ namespace RegistroLibros.Migrations
                     b.ToTable("Prestamos");
                 });
 
+            modelBuilder.Entity("RegistroLibros.Models.EntradaDetalle", b =>
+                {
+                    b.HasOne("RegistroLibros.Models.Entradas", "Entrada")
+                        .WithMany("EntradasDetalle")
+                        .HasForeignKey("EntradaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Entrada");
+                });
+
             modelBuilder.Entity("RegistroLibros.Models.Prestamos", b =>
                 {
                     b.HasOne("RegistroLibros.Models.Estudiantes", "Estudiante")
@@ -126,6 +184,11 @@ namespace RegistroLibros.Migrations
                     b.Navigation("Estudiante");
 
                     b.Navigation("Libro");
+                });
+
+            modelBuilder.Entity("RegistroLibros.Models.Entradas", b =>
+                {
+                    b.Navigation("EntradasDetalle");
                 });
 #pragma warning restore 612, 618
         }

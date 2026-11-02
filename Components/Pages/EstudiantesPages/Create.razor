@@ -5,7 +5,7 @@
 @inject NavigationManager navigationManager
 
 <PageTitle>Crear Estudiante</PageTitle>
-<EditForm Model="Estudiante" OnValidSubmit="Guardar" FormName="EstudianteForm">
+<EditForm Model="Estudiante" OnValidSubmit="Guardar" FormName="EstudianteForm"> 
     <DataAnnotationsValidator />
     <div class="container">
         <div class="card-header">
@@ -50,7 +50,6 @@
     [Parameter]
     public int EstudianteId{ get; set; }
 
-    [SupplyParameterFromForm]
     public Estudiantes Estudiante { get; set; } = new();
     protected override async Task OnInitializedAsync()
     {
