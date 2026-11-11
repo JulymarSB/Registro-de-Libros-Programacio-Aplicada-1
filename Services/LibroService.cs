@@ -11,7 +11,7 @@ public class LibroService(IDbContextFactory<Contexto> contextFactory)
 {
      public async Task<Result> Guardar(Libros libro)
     {
-        if (!await ExisteTituloLibro(libro.Titulo))
+        if (await ExisteTituloLibro(libro.Titulo, libro.LibroId))
         {
             return Result.Success(false);
         }
@@ -33,7 +33,7 @@ public class LibroService(IDbContextFactory<Contexto> contextFactory)
         return await contexto.Libros.
         AnyAsync(l => l.LibroId == libroid);
     }
-    public async Task<bool> ExisteTituloLibro(String titulo)
+    public async Task<bool> ExisteTituloLibro(String titulo, int libroId = 0)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
         return await contexto.Libros.AnyAsync(l =>l.Titulo.ToLower() == titulo.ToLower());

@@ -9,14 +9,19 @@
 
   <ItemGroup>
     <PackageReference Include="Aplicada1.Core" Version="1.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="10.0.12" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.12" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="10.0.14" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.14" />
     <PackageReference Include="Blazored.Toast" Version="4.2.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.12" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.12">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.14" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.14">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
+    <Compile Remove="RegistroLibros.Api\**" />
+    <Content Remove="RegistroLibros.Api\**" />
+    <EmbeddedResource Remove="RegistroLibros.Api\**" />
+    <None Remove="RegistroLibros.Api\**" />
     </ItemGroup>
 
 </Project>
